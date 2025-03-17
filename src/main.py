@@ -44,7 +44,7 @@ def parse_input(filename):
     }
 
 # Usage
-filename = "me_at_the_zoo.in"  # replace with your actual filename
+filename = "me_at_the_zoo.in"  
 parsed_data = parse_input(filename)
 
 # Pretty-print the parsed data
