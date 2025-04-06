@@ -127,5 +127,8 @@ def main():
     
     print(f"Processed {input_filename}, output saved to {output_path}")
 
+    final_score = compute_score(optimized_cache_videos, video_sizes, endpoints, requests)
+    print(f"Final score: {final_score}")
+
 if __name__ == "__main__":
     main()
