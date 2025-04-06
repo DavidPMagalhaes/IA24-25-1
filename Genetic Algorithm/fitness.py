@@ -1,24 +1,37 @@
-from classes import Video, Cache, Endpoint
+from classes import Video, Cache, Endpoint # Keep imports for context, even if Video isn't directly used
 
-# Calacula o tempo total economizado ao servir um video a partir de uma cache e não de um data center
-def calculate_latency_savings(endpoint, video, cache, dataCenterLatency):
-    if cache in endpoint.cacheLatencies: # Verifica se a cache está disponivel para o endpoint
-        return max(0, endpoint.dataCenterLatency - endpoint.cacheLatencies[cache]) * endpoint.requests.get(video.id, 0) # max evita nºnegativos, caso a latência da cache seja maior que a do data center
-    return 0
-
-# Quanto tempo foi economizado no sistema ao aceder vedeos pelas caches e nao pelo datacenter
-def evaluate_solution(caches, endpoints, videos, dataCenterLatency):
+def evaluate_solution(temp_caches, endpoints):
     total_savings = 0 # total economizado
+    total_requests = 0 # To calculate the final score as per HashCode rules (savings / total requests * 1000)
+
     for endpoint in endpoints: # percorre todos os endpoints
+        if not endpoint.requests: # Skip endpoints with no requests
+             continue
+
         for videoId, numRequests in endpoint.requests.items(): # percorre todas as requisições no endpoint
-            video = videos[videoId]
-            bestLatency = endpoint.dataCenterLatency # inicializa com a latência do datacenter, supondo que a cache não tem nenhum video
+            total_requests += numRequests # Accumulate total requests
+            # bestLatency initially assumes fetching from the data center
+            bestLatency = endpoint.dataCenterLatency
 
-            for cacheId, latencyToCache in endpoint.cacheLatencies.items(): # verifica se o video está armazenado numa cache próxima
-                cache = caches[cacheId]
-                if video in cache.videos: #se o video estiver na cache, verifica-se a menor latência possivel
-                    bestLatency = min(bestLatency, latencyToCache)
-            
-            total_savings += (endpoint.dataCenterLatency - bestLatency) * numRequests # calcula o tempo economizado e adiciona ao total, se video na cache a latência é menor, mais requisições para um video, maior economia de tempo
+            # Check connected caches for the video
+            for cacheId, latencyToCache in endpoint.cacheLatencies.items():
+                # Ensure cacheId is valid index for temp_caches
+                if 0 <= cacheId < len(temp_caches):
+                    cache = temp_caches[cacheId]
+                    if videoId in cache.videos: # se o video estiver na cache
+                        bestLatency = min(bestLatency, latencyToCache) # Find the minimum latency
+                # else: print(f"Warning: cacheId {cacheId} out of bounds for temp_caches") # Optional debug
 
-    return total_savings
+            # Calculate savings for this specific request (video * numRequests)
+            # and add to total
+            time_saved_for_request = (endpoint.dataCenterLatency - bestLatency) * numRequests
+            if time_saved_for_request > 0: # Only add positive savings
+                 total_savings += time_saved_for_request
+
+    # HashCode score calculation: (Total Time Saved / Total Number of Requests) * 1000
+    if total_requests == 0:
+        return 0 # Avoid division by zero if there are no requests
+    
+    # The problem asks for total saved time, not average. Let's return total_savings.
+    # If average score needed: return (total_savings * 1000) / total_requests
+    return total_savings # Return the total time saved in microseconds
