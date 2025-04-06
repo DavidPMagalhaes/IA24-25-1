@@ -133,11 +133,11 @@ def genetic_algorithm(caches, endpoints, videos, videos_dict, population_size, m
 
 
 if __name__ == "__main__":
-    inputFile = "dataset/me_at_the_zoo.in" 
+    inputFile = "dataset/videos_worth_spreading.in" 
     # GA Parameters
-    POPULATION_SIZE = 50
+    POPULATION_SIZE = 10
     MUTATION_RATE = 0.05 # Often lower mutation rates are better
-    GENERATIONS = 50    # More generations might be needed for complex problems
+    GENERATIONS = 10    # More generations might be needed for complex problems
 
     print(f"Parsing input file: {inputFile}...")
     # Parse the input file - Renamed variables for clarity
